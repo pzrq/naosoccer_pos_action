@@ -57,7 +57,7 @@ class NaoPosActionClient : public rclcpp::Node {
     */
 
     this->sub_action_req_ = this->create_subscription<std_msgs::msg::String>(
-                              "action_req_",
+                              "action_req",
                               10,
                               std::bind(&NaoPosActionClient::action_req_callback, this, _1));
 

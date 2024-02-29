@@ -39,6 +39,7 @@ NaoPosActionServer::NaoPosActionServer(const rclcpp::NodeOptions & options)
                            "/effectors/joint_positions", 1);
   pub_joint_stiffnesses_ = create_publisher<nao_lola_command_msgs::msg::JointStiffnesses>(
                              "/effectors/joint_stiffnesses", 1);
+  pos_in_action_=false;
 
   sub_joint_states_ =
     create_subscription<nao_lola_sensor_msgs::msg::JointPositions>(

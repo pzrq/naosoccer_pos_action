@@ -68,7 +68,7 @@ private:
 
   bool file_successfully_read_ = false;
   std::vector<KeyFrame> key_frames_;
-  bool pos_in_action_ = false;
+  std::atomic<bool> pos_in_action_;
   bool firstTickSinceActionStarted_ = true;
   std::unique_ptr<KeyFrame> key_frame_start_;
   rclcpp::Time initial_time_;
