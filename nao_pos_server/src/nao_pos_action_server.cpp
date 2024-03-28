@@ -72,7 +72,7 @@ void NaoPosActionServer::readPosFile(std::string & filePath) {
     file_successfully_read_ = parseResult.successful;
     key_frames_ = parseResult.keyFrames;
   } else {
-    RCLCPP_ERROR(this->get_logger(), "Couldn't open file");
+    RCLCPP_ERROR(this->get_logger(), ("Could not open file:  " + filePath).c_str());
     file_successfully_read_ = false;
   }
 }
@@ -236,14 +236,14 @@ rclcpp_action::GoalResponse NaoPosActionServer::handleGoal(
   const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const nao_pos_interfaces::action::PosPlay::Goal> goal) {
   std::lock_guard<std::mutex> lock(mutex_);
-  RCLCPP_INFO(get_logger(), "Received goal request");
+  RCLCPP_INFO( get_logger(), ("Received goal request for:  " + goal->action_name).c_str());
   (void)uuid;
   (void)goal;
 
   std::string filename = goal->action_name + ".pos";
   std::string path = getFullFilePath(filename);
   readPosFile(path);
-
+  RCLCPP_INFO( get_logger(), ("found pos file:  " + path).c_str());
   if (!file_successfully_read_ || pos_in_action_) {
     return rclcpp_action::GoalResponse::REJECT;
   } else {
@@ -264,7 +264,7 @@ rclcpp_action::CancelResponse NaoPosActionServer::handleCancel(
 void NaoPosActionServer::handleAccepted(
   const std::shared_ptr<rclcpp_action::ServerGoalHandle<nao_pos_interfaces::action::PosPlay>> goal_handle) {
   std::lock_guard<std::mutex> lock(mutex_);
-  RCLCPP_DEBUG(this->get_logger(), "Starting Pos Action");
+  RCLCPP_INFO(this->get_logger(), "Starting Pos Action");
   initial_time_ = rclcpp::Node::now();
   pos_in_action_ = true;
   firstTickSinceActionStarted_ = true;

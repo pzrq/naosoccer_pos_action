@@ -89,7 +89,7 @@ class NaoPosActionClient : public rclcpp::Node {
     send_goal_options.result_callback =
       std::bind(&NaoPosActionClient::result_callback, this, _1);
 
-    RCLCPP_INFO(this->get_logger(), "Sending goal: "  );
+    RCLCPP_INFO(this->get_logger(), ("Sending goal request for pos file:  " + action_name + ".pos").c_str()  );
 
     this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
   }

@@ -38,6 +38,11 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   nao_lola_command_msgs
   std_msgs)
 
+add_executable(nao_pos_publisher src/nao_pos_publisher.cpp)
+ament_target_dependencies(nao_pos_publisher rclcpp std_msgs)
+install(TARGETS
+  nao_pos_publisher
+  DESTINATION lib/${PROJECT_NAME})
 
 # ################ NAO_POS_ACTION_SERVER ####################
 add_library(${PROJECT_NAME}_node SHARED
