@@ -32,40 +32,40 @@
 #include "nao_pos_interfaces/action/pos_play.hpp"
 #include "std_msgs/msg/string.hpp"
 
-#include "nao_pos_server/nao_pos_action_client.hpp"
+#include "nao_pos_server/nao_pos_action_client2.hpp"
 
 namespace fs = boost::filesystem;
 
-namespace nao_pos_action_client_ns {
+namespace nao_pos_action_client2_ns {
 
 using PosAction = nao_pos_interfaces::action::PosPlay;
 using GoalHandlePosAction = rclcpp_action::ClientGoalHandle<PosAction>;
 
-NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
+NaoPosActionClient2::NaoPosActionClient2(const rclcpp::NodeOptions & options)
   : rclcpp::Node{"nao_pos_action_client_node", options} {
 
     using namespace std::placeholders;
     this->client_ptr_ = rclcpp_action::create_client<PosAction>(
                           this,
-                          "nao_pos_action");
+                          "nao_pos_action2");
 
     /*this->timer_ = this->create_wall_timer(
                      std::chrono::milliseconds(500),
-                     std::bind(&NaoPosActionClient::send_goal, this));
+                     std::bind(&NaoPosActionClient2::send_goal, this));
     */
 
     this->sub_action_req_ = this->create_subscription<std_msgs::msg::String>(
-                              "action_req",
+                              "action_req2",
                               10,
-                              std::bind(&NaoPosActionClient::action_req_callback, this, _1));
+                              std::bind(&NaoPosActionClient2::action_req_callback, this, _1));
 
-    RCLCPP_INFO(this->get_logger(), "NaoPosActionClient initialized");
+    RCLCPP_INFO(this->get_logger(), "NaoPosActionClient2 initialized");
 
   }
 
-  NaoPosActionClient::~NaoPosActionClient() {}
+  NaoPosActionClient2::~NaoPosActionClient2() {}
 
-  void NaoPosActionClient::send_goal( std::string & action_name)  {
+  void NaoPosActionClient2::send_goal( std::string & action_name)  {
     using namespace std::placeholders;
 
     //this->timer_->cancel();
@@ -81,27 +81,27 @@ NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
     auto send_goal_options = rclcpp_action::Client<PosAction>::SendGoalOptions();
 
     send_goal_options.goal_response_callback =
-      std::bind(&NaoPosActionClient::goal_response_callback, this, _1);
+      std::bind(&NaoPosActionClient2::goal_response_callback, this, _1);
 
     //send_goal_options.feedback_callback =
-    //  std::bind(&NaoPosActionClient::feedback_callback, this, _1, _2);
+    //  std::bind(&NaoPosActionClient2::feedback_callback, this, _1, _2);
 
     send_goal_options.result_callback =
-      std::bind(&NaoPosActionClient::result_callback, this, _1);
+      std::bind(&NaoPosActionClient2::result_callback, this, _1);
 
     RCLCPP_INFO(this->get_logger(), ("Sending goal request for pos file:  " + action_name + ".pos").c_str()  );
 
     this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
   }
 
-  void NaoPosActionClient::action_req_callback(const std_msgs::msg::String::SharedPtr msg) {
+  void NaoPosActionClient2::action_req_callback(const std_msgs::msg::String::SharedPtr msg) {
     RCLCPP_DEBUG(this->get_logger(), "I heard: '%s'", msg->data.c_str());
 
     std::string action_name = msg->data;
     this->send_goal(action_name);
   }
 
-  void NaoPosActionClient::goal_response_callback(const GoalHandlePosAction::SharedPtr & goal_handle) {
+  void NaoPosActionClient2::goal_response_callback(const GoalHandlePosAction::SharedPtr & goal_handle) {
     if (!goal_handle) {
       RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
     } else {
@@ -109,7 +109,7 @@ NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
     }
   }
 
-  void NaoPosActionClient::feedback_callback(
+  void NaoPosActionClient2::feedback_callback(
     GoalHandlePosAction::SharedPtr,
     const std::shared_ptr<const PosAction::Feedback> feedback) {
 
@@ -117,7 +117,7 @@ NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
 
   }
 
-  void NaoPosActionClient::result_callback(const GoalHandlePosAction::WrappedResult & result) {
+  void NaoPosActionClient2::result_callback(const GoalHandlePosAction::WrappedResult & result) {
     switch (result.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
       break;
@@ -140,4 +140,4 @@ NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
 
 }  // nao_pos_action_client_ns
 
-RCLCPP_COMPONENTS_REGISTER_NODE(nao_pos_action_client_ns::NaoPosActionClient)
+RCLCPP_COMPONENTS_REGISTER_NODE(nao_pos_action_client2_ns::NaoPosActionClient2)

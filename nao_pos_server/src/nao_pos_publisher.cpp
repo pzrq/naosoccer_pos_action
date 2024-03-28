@@ -19,7 +19,7 @@ class NaoPosPublisher : public rclcpp::Node
     {
       publisher_ = this->create_publisher<std_msgs::msg::String>("action_req", 10);
       timer_ = this->create_wall_timer(
-      5000ms, std::bind(&NaoPosPublisher::timer_callback, this));
+      10000ms, std::bind(&NaoPosPublisher::timer_callback, this));
     }
 
   private:

@@ -1,7 +1,9 @@
 # nao_pos
 
-This repository hosts two ROS2 packages for NAOv6 that allows to play gestures.
+This repository hosts two ROS2 packages for NAOv6 that allows to play gestures and it is part of the [Open Access NAO](https://github.com/antbono/OAN) framework.
+
 This project is a fork of [naosoccer_pos_action](https://github.com/ijnek/naosoccer_pos_action).
+
 The main new features are two:
 
 - Implementing the request to play a movement as a **ROS2 action**. This gives much more control on the execution and more flexibility.

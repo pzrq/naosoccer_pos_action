@@ -77,6 +77,39 @@ install(
   DESTINATION share/${PROJECT_NAME}/pos/
 )
 
+# ################ NAO_POS_ACTION_SERVER2 ####################
+add_library(${PROJECT_NAME}2_node SHARED
+  src/nao_pos_action_server2.cpp
+  src/parser.cpp)
+target_include_directories(${PROJECT_NAME}2_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+rclcpp_components_register_node(${PROJECT_NAME}2_node
+  PLUGIN "nao_pos_action_server2_ns::NaoPosActionServer2"
+  EXECUTABLE nao_pos_action_server2)
+
+ament_target_dependencies(${PROJECT_NAME}2_node ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+# Install
+install(
+  DIRECTORY include/
+  DESTINATION include)
+install(
+  TARGETS ${PROJECT_NAME}2_node
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+install(
+  DIRECTORY pos/
+  DESTINATION share/${PROJECT_NAME}/pos/
+)
+
 # ################ NAO_POS_ACTION_CLIENT ####################
 add_library(nao_pos_client SHARED
   src/nao_pos_action_client.cpp)
@@ -99,6 +132,45 @@ install(
   DESTINATION include)
 install(
   TARGETS nao_pos_client
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+install(
+  DIRECTORY pos/
+  DESTINATION share/${PROJECT_NAME}/pos/
+)
+
+
+# Install launch files.
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
+# ################ NAO_POS_ACTION_CLIENT ####################
+add_library(nao_pos_client2 SHARED
+  src/nao_pos_action_client2.cpp)
+target_include_directories(nao_pos_client2 PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+rclcpp_components_register_node(nao_pos_client2
+  PLUGIN "nao_pos_action_client2_ns::NaoPosActionClient2"
+  EXECUTABLE nao_pos_action_client2)
+
+ament_target_dependencies(nao_pos_client2 ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+# Install
+install(
+  DIRECTORY include/
+  DESTINATION include)
+install(
+  TARGETS nao_pos_client2
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
