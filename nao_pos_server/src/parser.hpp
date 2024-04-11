@@ -29,7 +29,7 @@ struct ParseResult
   std::vector<KeyFrame> keyFrames;
 };
 
-ParseResult parse(const std::vector<std::string> & in);
+ParseResult parse(const std::vector<std::string>& in);
 
 }  // namespace parser
 

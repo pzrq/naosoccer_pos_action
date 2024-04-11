@@ -35,35 +35,33 @@
 #include "nao_pos_interfaces/action/pos_play.hpp"
 #include "std_msgs/msg/string.hpp"
 
-
-
 namespace fs = boost::filesystem;
 
-namespace nao_pos_action_client2_ns {
+namespace nao_pos_action_client2_ns
+{
 
-class NaoPosActionClient2 : public rclcpp::Node {
-  public:
-	explicit NaoPosActionClient2(const rclcpp::NodeOptions & options = rclcpp::NodeOptions{});
-	virtual ~NaoPosActionClient2();
+class NaoPosActionClient2 : public rclcpp::Node
+{
+public:
+  explicit NaoPosActionClient2(const rclcpp::NodeOptions& options = rclcpp::NodeOptions{});
+  virtual ~NaoPosActionClient2();
 
-  private:
+private:
+  void send_goal(std::string& action_name);
+  void action_req_callback(const std_msgs::msg::String::SharedPtr msg);
+  void goal_response_callback(
+	  const rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::SharedPtr& goal_handle);
+  void feedback_callback(rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::SharedPtr,
+						 const std::shared_ptr<const nao_pos_interfaces::action::PosPlay::Feedback> feedback);
+  void
+  result_callback(const rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::WrappedResult& result);
 
-	void send_goal( std::string & action_name);
-	void action_req_callback(const std_msgs::msg::String::SharedPtr msg);
-	void goal_response_callback(
-	    const rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::SharedPtr & goal_handle);
-	void feedback_callback(
-	    rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::SharedPtr,
-	    const std::shared_ptr<const nao_pos_interfaces::action::PosPlay::Feedback> feedback);
-	void result_callback(
-	    const rclcpp_action::ClientGoalHandle<nao_pos_interfaces::action::PosPlay>::WrappedResult & result);
+  rclcpp_action::Client<nao_pos_interfaces::action::PosPlay>::SharedPtr client_ptr_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_action_req_;
 
-	rclcpp_action::Client<nao_pos_interfaces::action::PosPlay>::SharedPtr client_ptr_;
-	rclcpp::TimerBase::SharedPtr timer_;
-	rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_action_req_;
+};	// NaoPosActionClient2
 
-}; // NaoPosActionClient2
+}  // namespace nao_pos_action_client2_ns
 
-} //nao_pos_action_client_ns
-
-#endif // NAO_POS_SERVER__NAO_POS_ACTION_CLIENT2_HPP_
+#endif	// NAO_POS_SERVER__NAO_POS_ACTION_CLIENT2_HPP_

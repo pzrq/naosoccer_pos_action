@@ -21,12 +21,11 @@
 class KeyFrame
 {
 public:
-  KeyFrame(
-    unsigned t_ms,
-    const nao_lola_command_msgs::msg::JointPositions & positions,
-    const nao_lola_command_msgs::msg::JointStiffnesses & stiffnesses)
-  : t_ms(t_ms), positions(positions), stiffnesses(stiffnesses)
-  {}
+  KeyFrame(unsigned t_ms, const nao_lola_command_msgs::msg::JointPositions& positions,
+           const nao_lola_command_msgs::msg::JointStiffnesses& stiffnesses)
+    : t_ms(t_ms), positions(positions), stiffnesses(stiffnesses)
+  {
+  }
 
   unsigned t_ms;
   nao_lola_command_msgs::msg::JointPositions positions;

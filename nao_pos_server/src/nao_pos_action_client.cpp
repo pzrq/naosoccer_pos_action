@@ -36,89 +36,92 @@
 
 namespace fs = boost::filesystem;
 
-namespace nao_pos_action_client_ns {
+namespace nao_pos_action_client_ns
+{
 
 using PosAction = nao_pos_interfaces::action::PosPlay;
 using GoalHandlePosAction = rclcpp_action::ClientGoalHandle<PosAction>;
 
-NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
-  : rclcpp::Node{"nao_pos_action_client_node", options} {
+NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions& options)
+  : rclcpp::Node{ "nao_pos_action_client_node", options }
+{
+  using namespace std::placeholders;
+  this->client_ptr_ = rclcpp_action::create_client<PosAction>(this, "nao_pos_action");
 
-    using namespace std::placeholders;
-    this->client_ptr_ = rclcpp_action::create_client<PosAction>(
-                          this,
-                          "nao_pos_action");
+  /*this->timer_ = this->create_wall_timer(
+                   std::chrono::milliseconds(500),
+                   std::bind(&NaoPosActionClient::send_goal, this));
+  */
 
-    /*this->timer_ = this->create_wall_timer(
-                     std::chrono::milliseconds(500),
-                     std::bind(&NaoPosActionClient::send_goal, this));
-    */
+  this->sub_action_req_ = this->create_subscription<std_msgs::msg::String>(
+      "action_req", 10, std::bind(&NaoPosActionClient::action_req_callback, this, _1));
 
-    this->sub_action_req_ = this->create_subscription<std_msgs::msg::String>(
-                              "action_req",
-                              10,
-                              std::bind(&NaoPosActionClient::action_req_callback, this, _1));
+  RCLCPP_INFO(this->get_logger(), "NaoPosActionClient initialized");
+}
 
-    RCLCPP_INFO(this->get_logger(), "NaoPosActionClient initialized");
+NaoPosActionClient::~NaoPosActionClient()
+{
+}
 
+void NaoPosActionClient::send_goal(std::string& action_name)
+{
+  using namespace std::placeholders;
+
+  // this->timer_->cancel();
+
+  if (!this->client_ptr_->wait_for_action_server())
+  {
+    RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
+    rclcpp::shutdown();
   }
 
-  NaoPosActionClient::~NaoPosActionClient() {}
+  auto goal_msg = PosAction::Goal();
+  goal_msg.action_name = action_name;
 
-  void NaoPosActionClient::send_goal( std::string & action_name)  {
-    using namespace std::placeholders;
+  auto send_goal_options = rclcpp_action::Client<PosAction>::SendGoalOptions();
 
-    //this->timer_->cancel();
+  send_goal_options.goal_response_callback = std::bind(&NaoPosActionClient::goal_response_callback, this, _1);
 
-    if (!this->client_ptr_->wait_for_action_server()) {
-      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-      rclcpp::shutdown();
-    }
+  // send_goal_options.feedback_callback =
+  //   std::bind(&NaoPosActionClient::feedback_callback, this, _1, _2);
 
-    auto goal_msg = PosAction::Goal();
-    goal_msg.action_name = action_name;
+  send_goal_options.result_callback = std::bind(&NaoPosActionClient::result_callback, this, _1);
 
-    auto send_goal_options = rclcpp_action::Client<PosAction>::SendGoalOptions();
+  RCLCPP_INFO(this->get_logger(), ("Sending goal request for pos file:  " + action_name + ".pos").c_str());
 
-    send_goal_options.goal_response_callback =
-      std::bind(&NaoPosActionClient::goal_response_callback, this, _1);
+  this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+}
 
-    //send_goal_options.feedback_callback =
-    //  std::bind(&NaoPosActionClient::feedback_callback, this, _1, _2);
+void NaoPosActionClient::action_req_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  RCLCPP_DEBUG(this->get_logger(), "I heard: '%s'", msg->data.c_str());
 
-    send_goal_options.result_callback =
-      std::bind(&NaoPosActionClient::result_callback, this, _1);
+  std::string action_name = msg->data;
+  this->send_goal(action_name);
+}
 
-    RCLCPP_INFO(this->get_logger(), ("Sending goal request for pos file:  " + action_name + ".pos").c_str()  );
-
-    this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+void NaoPosActionClient::goal_response_callback(const GoalHandlePosAction::SharedPtr& goal_handle)
+{
+  if (!goal_handle)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
   }
-
-  void NaoPosActionClient::action_req_callback(const std_msgs::msg::String::SharedPtr msg) {
-    RCLCPP_DEBUG(this->get_logger(), "I heard: '%s'", msg->data.c_str());
-
-    std::string action_name = msg->data;
-    this->send_goal(action_name);
+  else
+  {
+    RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
   }
+}
 
-  void NaoPosActionClient::goal_response_callback(const GoalHandlePosAction::SharedPtr & goal_handle) {
-    if (!goal_handle) {
-      RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-    } else {
-      RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
-    }
-  }
+void NaoPosActionClient::feedback_callback(GoalHandlePosAction::SharedPtr,
+                                           const std::shared_ptr<const PosAction::Feedback> feedback)
+{
+  // TODO
+}
 
-  void NaoPosActionClient::feedback_callback(
-    GoalHandlePosAction::SharedPtr,
-    const std::shared_ptr<const PosAction::Feedback> feedback) {
-
-    //TODO
-
-  }
-
-  void NaoPosActionClient::result_callback(const GoalHandlePosAction::WrappedResult & result) {
-    switch (result.code) {
+void NaoPosActionClient::result_callback(const GoalHandlePosAction::WrappedResult& result)
+{
+  switch (result.code)
+  {
     case rclcpp_action::ResultCode::SUCCEEDED:
       break;
     case rclcpp_action::ResultCode::ABORTED:
@@ -130,14 +133,14 @@ NaoPosActionClient::NaoPosActionClient(const rclcpp::NodeOptions & options)
     default:
       RCLCPP_ERROR(this->get_logger(), "Unknown result code");
       return;
-    }
-
-    //if (result.result->success)
-    RCLCPP_INFO(this->get_logger(), "Joints posisitions regulary played.");
-
-    //rclcpp::shutdown();
   }
 
-}  // nao_pos_action_client_ns
+  // if (result.result->success)
+  RCLCPP_INFO(this->get_logger(), "Joints posisitions regulary played.");
+
+  // rclcpp::shutdown();
+}
+
+}  // namespace nao_pos_action_client_ns
 
 RCLCPP_COMPONENTS_REGISTER_NODE(nao_pos_action_client_ns::NaoPosActionClient)
