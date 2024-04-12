@@ -31,7 +31,9 @@ jobs:
         with:
           use-ros2-testing: true
       - uses: ros-tooling/action-ros-ci@master
+      #- uses: ros-tooling/action-ros-ci@christophebedard/option-symlink-install  
         with:
           skip-tests: true
           target-ros2-distro: rolling
+          #no-symlink-install: true
           vcs-repo-file-url: dependencies.repos
