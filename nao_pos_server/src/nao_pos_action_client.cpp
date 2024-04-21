@@ -63,6 +63,14 @@ NaoPosActionClient::~NaoPosActionClient()
 {
 }
 
+void NaoPosActionClient::action_req_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  RCLCPP_DEBUG(this->get_logger(), "I heard: '%s'", msg->data.c_str());
+
+  std::string action_name = msg->data;
+  this->send_goal(action_name);
+}
+
 void NaoPosActionClient::send_goal(std::string& action_name)
 {
   using namespace std::placeholders;
@@ -92,13 +100,6 @@ void NaoPosActionClient::send_goal(std::string& action_name)
   this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void NaoPosActionClient::action_req_callback(const std_msgs::msg::String::SharedPtr msg)
-{
-  RCLCPP_DEBUG(this->get_logger(), "I heard: '%s'", msg->data.c_str());
-
-  std::string action_name = msg->data;
-  this->send_goal(action_name);
-}
 
 void NaoPosActionClient::goal_response_callback(const GoalHandlePosAction::SharedPtr& goal_handle)
 {
@@ -112,33 +113,32 @@ void NaoPosActionClient::goal_response_callback(const GoalHandlePosAction::Share
   }
 }
 
+/*
 void NaoPosActionClient::feedback_callback(GoalHandlePosAction::SharedPtr,
                                            const std::shared_ptr<const PosAction::Feedback> feedback)
 {
   // TODO
 }
+*/
 
 void NaoPosActionClient::result_callback(const GoalHandlePosAction::WrappedResult& result)
 {
   switch (result.code)
   {
     case rclcpp_action::ResultCode::SUCCEEDED:
-      break;
+      RCLCPP_INFO(this->get_logger(), "Joints posisitions regulary played.");
+      return;
     case rclcpp_action::ResultCode::ABORTED:
-      RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+      RCLCPP_ERROR(this->get_logger(), " nao pos Goal was aborted");
       return;
     case rclcpp_action::ResultCode::CANCELED:
-      RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+      RCLCPP_ERROR(this->get_logger(), " nao pos Goal was canceled");
       return;
     default:
-      RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+      RCLCPP_ERROR(this->get_logger(), " nao pos Unknown result code");
       return;
   }
 
-  // if (result.result->success)
-  RCLCPP_INFO(this->get_logger(), "Joints posisitions regulary played.");
-
-  // rclcpp::shutdown();
 }
 
 }  // namespace nao_pos_action_client_ns

@@ -14,22 +14,31 @@ using namespace std::chrono_literals;
 class NaoPosPublisher : public rclcpp::Node
 {
 public:
-  NaoPosPublisher() : Node("nao_pos_publisher")
+  NaoPosPublisher() : Node("nao_pos_publisher"), count_(0)
   {
     publisher_ = this->create_publisher<std_msgs::msg::String>("action_req", 10);
-    timer_ = this->create_wall_timer(10000ms, std::bind(&NaoPosPublisher::timer_callback, this));
+    timer_ = this->create_wall_timer(15000ms, std::bind(&NaoPosPublisher::timer_callback, this));
   }
 
 private:
   void timer_callback()
   {
     auto message = std_msgs::msg::String();
-    message.data = "only_legs";
+    if(count_%2==0){
+      message.data = "sit-to-stand";
+    }else{
+      message.data = "stand-to-sit"; 
+    }
+    count_++;
+    
     RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     publisher_->publish(message);
+
   }
+
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  uint count_;
 };
 
 int main(int argc, char* argv[])
