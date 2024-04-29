@@ -22,7 +22,6 @@ public:
 
     publisher_ = this->create_publisher<std_msgs::msg::String>("action_req", 10);
     timer_ = this->create_wall_timer(10000ms, std::bind(&NaoPosPublisher::timer_callback, this));
-
   }
 
 private:
@@ -33,14 +32,13 @@ private:
     message.data = file_name;
     RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     publisher_->publish(message);
-
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
 };
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<NaoPosPublisher>());

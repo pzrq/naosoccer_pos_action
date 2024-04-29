@@ -5,7 +5,6 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='nao_pos_server',
-            #namespace='turtlesim2',
             executable='nao_pos_action_server',
             name='nao_pos_action_server_legs',
             remappings=[
@@ -18,7 +17,6 @@ def generate_launch_description():
         ),
         Node(
             package='nao_pos_server',
-            #namespace='turtlesim2',
             executable='nao_pos_action_client',
             name='nao_pos_action_client_legs',
             remappings=[
@@ -32,7 +30,6 @@ def generate_launch_description():
         ),
         Node(
             package='nao_pos_server',
-            #namespace='turtlesim2',
             executable='nao_pos_publisher',
             name='nao_pos_publisher_legs',
             remappings=[

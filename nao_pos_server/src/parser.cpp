@@ -15,14 +15,14 @@
 #include "parser.hpp"
 
 #include <cmath>
-#include <iterator>
 #include <iostream>
-#include <vector>
+#include <iterator>
 #include <sstream>
+#include <vector>
 
-#include "rclcpp/logging.hpp"
-#include "nao_lola_command_msgs/msg/joint_indexes.hpp"
 #include "indexes.hpp"
+#include "nao_lola_command_msgs/msg/joint_indexes.hpp"
+#include "rclcpp/logging.hpp"
 
 // using namespace std;
 
@@ -36,38 +36,29 @@
   .set__stiffnesses({1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
 */
 
-namespace parser {
+namespace parser
+{
 
-/*
-template <typename S>
-std::ostream& operator<<(std::ostream& os, const std::vector<S>& vector) {
-  // Printing all the elements
-  // using <<
-  for (auto element : vector) {
-    os << element << " ";
+std::string vec2str(const std::vector<uint8_t> & vec)
+{
+  std::stringstream ss;
+  ss << "[ ";
+  int tmp = 0;
+  for (const uint8_t & elem : vec) {
+    tmp = elem;
+    ss << tmp << " ";
   }
-  return os;
-}
-*/
-
-std::string vec2str(const std::vector<uint8_t>& vec) {
-    std::stringstream ss;
-    ss<<"[ ";
-    int tmp=0;
-    for (const uint8_t& elem : vec) {
-        tmp = elem;
-        ss << tmp << " ";
-    }
-    ss<<"]";
-    return ss.str();
+  ss << "]";
+  return ss.str();
 }
 
 static rclcpp::Logger logger = rclcpp::get_logger("parser");
 
 // Forward declaration
-std::vector<std::string> split(const std::string& line);
+std::vector<std::string> split(const std::string & line);
 
-ParseResult parse(const std::vector<std::string>& in) {
+ParseResult parse(const std::vector<std::string> & in)
+{
   ParseResult parseResult;
 
   unsigned keyFrameTime = 0;
@@ -77,16 +68,16 @@ ParseResult parse(const std::vector<std::string>& in) {
 
   nao_lola_command_msgs::msg::JointPositions prevJointPositions;
 
-  for (const auto& line : in) {
-
+  for (const auto & line : in) {
     if (line.front() == '$') {
       RCLCPP_DEBUG_STREAM(logger, "Stiffness: " << line);
       auto splitted_line = split(line);
 
       // Check size
       if (splitted_line.size() != STIFFNESSES_SIZE) {
-        RCLCPP_ERROR_STREAM(logger, "pos file line has " << splitted_line.size() << " elements, but expected "
-                            << STIFFNESSES_SIZE);
+        RCLCPP_ERROR_STREAM(
+          logger, "pos file line has " << splitted_line.size() << " elements, but expected "
+                                       << STIFFNESSES_SIZE);
         parseResult.successful = false;
         return parseResult;
       }
@@ -101,10 +92,11 @@ ParseResult parse(const std::vector<std::string>& in) {
             float stiffness_float = std::stof(stiffness_string);
             jointStiffnesses.indexes.push_back(i - 1);
             jointStiffnesses.stiffnesses.push_back(stiffness_float);
-          } catch (std::invalid_argument&) {
-            RCLCPP_ERROR(logger, ("stiffness value '" + stiffness_string +
-                                  "' is not a valid stiffness value (cannot be converted to float)")
-                         .c_str());
+          } catch (std::invalid_argument &) {
+            RCLCPP_ERROR(
+              logger, ("stiffness value '" + stiffness_string +
+                       "' is not a valid stiffness value (cannot be converted to float)")
+                        .c_str());
             parseResult.successful = false;
             return parseResult;
           }
@@ -112,14 +104,14 @@ ParseResult parse(const std::vector<std::string>& in) {
       }
 
     } else if (line.front() == '!') {
-
       RCLCPP_DEBUG_STREAM(logger, "Position: " << line);
       auto splitted_line = split(line);
 
       // Check size
       if (splitted_line.size() != POSITIONS_SIZE) {
-        RCLCPP_ERROR_STREAM(logger, "pos file line has " << splitted_line.size() << " elements, but expected "
-                            << POSITIONS_SIZE);
+        RCLCPP_ERROR_STREAM(
+          logger, "pos file line has " << splitted_line.size() << " elements, but expected "
+                                       << POSITIONS_SIZE);
         parseResult.successful = false;
         return parseResult;
       }
@@ -140,10 +132,11 @@ ParseResult parse(const std::vector<std::string>& in) {
               jointStiffnesses.indexes.push_back(i - 1);
               jointStiffnesses.stiffnesses.push_back(1.0);
             }
-          } catch (std::invalid_argument&) {
-            RCLCPP_ERROR(logger, ("joint value '" + position_deg_string +
-                                  "' is not a valid joint value (cannot be converted to float)")
-                         .c_str());
+          } catch (std::invalid_argument &) {
+            RCLCPP_ERROR(
+              logger, ("joint value '" + position_deg_string +
+                       "' is not a valid joint value (cannot be converted to float)")
+                        .c_str());
             parseResult.successful = false;
             return parseResult;
           }
@@ -165,19 +158,20 @@ ParseResult parse(const std::vector<std::string>& in) {
       try {
         int duration = std::stoi(duration_string);
         keyFrameTime += duration;
-      } catch (std::invalid_argument&) {
+      } catch (std::invalid_argument &) {
         RCLCPP_ERROR(
-          logger,
-          ("duration '" + duration_string + "' is not a valid duration value (cannot be converted to int)").c_str());
+          logger, ("duration '" + duration_string +
+                   "' is not a valid duration value (cannot be converted to int)")
+                    .c_str());
         parseResult.successful = false;
         return parseResult;
       }
 
       if (customStiffnesses) {
-        if(jointPositions.indexes.size() != jointStiffnesses.indexes.size()){
+        if (jointPositions.indexes.size() != jointStiffnesses.indexes.size()) {
           RCLCPP_ERROR(logger, "joint positions and joint stiffness vectors have different sizes!");
-            parseResult.successful = false;
-            return parseResult;
+          parseResult.successful = false;
+          return parseResult;
         }
         for (unsigned i = 0; i < jointPositions.indexes.size(); i++) {
           if (jointPositions.indexes.at(i) != jointStiffnesses.indexes.at(i)) {
@@ -188,20 +182,18 @@ ParseResult parse(const std::vector<std::string>& in) {
         }
       }
 
-      parseResult.keyFrames.push_back(KeyFrame{ keyFrameTime, jointPositions, jointStiffnesses });
-      RCLCPP_INFO_STREAM(logger, "jointPositions indexes: " << vec2str(jointPositions.indexes)) ;
-      RCLCPP_INFO_STREAM(logger, "jointPositions size: " << jointPositions.indexes.size()) ;
+      parseResult.keyFrames.push_back(KeyFrame{keyFrameTime, jointPositions, jointStiffnesses});
+      RCLCPP_INFO_STREAM(logger, "jointPositions indexes: " << vec2str(jointPositions.indexes));
+      RCLCPP_INFO_STREAM(logger, "jointPositions size: " << jointPositions.indexes.size());
       RCLCPP_INFO_STREAM(logger, "jointStiffnesses indexes: " << vec2str(jointStiffnesses.indexes));
-      RCLCPP_INFO_STREAM(logger, "jointStiffnesses size: " << jointStiffnesses.indexes.size()) ;
+      RCLCPP_INFO_STREAM(logger, "jointStiffnesses size: " << jointStiffnesses.indexes.size());
 
-      
-      
-      prevJointPositions = jointPositions;    // Using assignment operator to copy one vector to other 
+      prevJointPositions = jointPositions;  // Using assignment operator to copy one vector to other
 
       jointStiffnesses.stiffnesses.clear();
       jointStiffnesses.indexes.clear();
       customStiffnesses = false;
-      
+
     } else {
       RCLCPP_DEBUG_STREAM(logger, "Ignoring: " << line);
     }
@@ -211,9 +203,11 @@ ParseResult parse(const std::vector<std::string>& in) {
   return parseResult;
 }
 
-std::vector<std::string> split(const std::string& line) {
+std::vector<std::string> split(const std::string & line)
+{
   std::istringstream ss(line);
-  return std::vector<std::string> { std::istream_iterator<std::string>{ ss }, std::istream_iterator<std::string>() };
+  return std::vector<std::string>{
+    std::istream_iterator<std::string>{ss}, std::istream_iterator<std::string>()};
 }
 
 }  // namespace parser

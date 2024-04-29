@@ -12,54 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "nao_pos_server/nao_pos_action_server.hpp"
+
 #include <algorithm>
-#include <memory>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "boost/filesystem.hpp"
-#include "rclcpp/rclcpp.hpp"
-
-#include "nao_pos_server/nao_pos_action_server.hpp"
-
 #include "indexes.hpp"
 #include "parser.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace fs = boost::filesystem;
 
-namespace nao_pos_action_server_ns {
+namespace nao_pos_action_server_ns
+{
 
-NaoPosActionServer::NaoPosActionServer(const rclcpp::NodeOptions& options)
-  : rclcpp::Node{ "nao_pos_action_server_node", options }, pos_in_action_(false) {
-
-  pub_joint_positions_ =
-    create_publisher<nao_lola_command_msgs::msg::JointPositions>("/effectors/joint_positions", rclcpp::SensorDataQoS());
-  pub_joint_stiffnesses_ =
-    create_publisher<nao_lola_command_msgs::msg::JointStiffnesses>("/effectors/joint_stiffnesses", rclcpp::SensorDataQoS());
+NaoPosActionServer::NaoPosActionServer(const rclcpp::NodeOptions & options)
+: rclcpp::Node{"nao_pos_action_server_node", options}, pos_in_action_(false)
+{
+  pub_joint_positions_ = create_publisher<nao_lola_command_msgs::msg::JointPositions>(
+    "/effectors/joint_positions", rclcpp::SensorDataQoS());
+  pub_joint_stiffnesses_ = create_publisher<nao_lola_command_msgs::msg::JointStiffnesses>(
+    "/effectors/joint_stiffnesses", rclcpp::SensorDataQoS());
 
   sub_joint_states_ = create_subscription<nao_lola_sensor_msgs::msg::JointPositions>(
-  "/sensors/joint_positions", rclcpp::SensorDataQoS(), [this](nao_lola_sensor_msgs::msg::JointPositions::SharedPtr sensor_joints) {
-    if (pos_in_action_) {
-      calculateEffectorJoints(*sensor_joints);
-    }
-  });
+    "/sensors/joint_positions", rclcpp::SensorDataQoS(),
+    [this](nao_lola_sensor_msgs::msg::JointPositions::SharedPtr sensor_joints) {
+      if (pos_in_action_) {
+        calculateEffectorJoints(*sensor_joints);
+      }
+    });
 
   action_server_ = rclcpp_action::create_server<nao_pos_interfaces::action::PosPlay>(
-                     this, "nao_pos_action",
-                     std::bind(&NaoPosActionServer::handleGoal, this, std::placeholders::_1, std::placeholders::_2),
-                     std::bind(&NaoPosActionServer::handleCancel, this, std::placeholders::_1),
-                     std::bind(&NaoPosActionServer::handleAccepted, this, std::placeholders::_1));
+    this, "nao_pos_action",
+    std::bind(&NaoPosActionServer::handleGoal, this, std::placeholders::_1, std::placeholders::_2),
+    std::bind(&NaoPosActionServer::handleCancel, this, std::placeholders::_1),
+    std::bind(&NaoPosActionServer::handleAccepted, this, std::placeholders::_1));
 
   RCLCPP_INFO(this->get_logger(), "nao_pos_action_server_node initialized");
 }
 
-NaoPosActionServer::~NaoPosActionServer() {
-}
+NaoPosActionServer::~NaoPosActionServer() {}
 
-void NaoPosActionServer::readPosFile(std::string& filePath) {
+void NaoPosActionServer::readPosFile(std::string & filePath)
+{
   std::ifstream ifstream(filePath);
   if (ifstream.is_open()) {
     RCLCPP_DEBUG(this->get_logger(), ("Pos file succesfully loaded from " + filePath).c_str());
@@ -74,9 +75,11 @@ void NaoPosActionServer::readPosFile(std::string& filePath) {
   }
 }
 
-std::string NaoPosActionServer::getFullFilePath(std::string& filename) {
+std::string NaoPosActionServer::getFullFilePath(std::string & filename)
+{
   std::string file = "pos/" + filename;
-  std::string package_share_directory = ament_index_cpp::get_package_share_directory("nao_pos_server");
+  std::string package_share_directory =
+    ament_index_cpp::get_package_share_directory("nao_pos_server");
 
   fs::path dir_path(package_share_directory);
   fs::path file_path(file);
@@ -84,7 +87,8 @@ std::string NaoPosActionServer::getFullFilePath(std::string& filename) {
   return full_path.string();
 }
 
-std::vector<std::string> NaoPosActionServer::readLines(std::ifstream& ifstream) {
+std::vector<std::string> NaoPosActionServer::readLines(std::ifstream & ifstream)
+{
   std::vector<std::string> ret;
 
   while (!ifstream.eof()) {
@@ -96,7 +100,9 @@ std::vector<std::string> NaoPosActionServer::readLines(std::ifstream& ifstream) 
   return ret;
 }
 
-float NaoPosActionServer::findElem(const std::vector<uint8_t>& indexes, const std::vector<float>& data, uint8_t joint) {
+float NaoPosActionServer::findElem(
+  const std::vector<uint8_t> & indexes, const std::vector<float> & data, uint8_t joint)
+{
   for (uint8_t a = 0; a < indexes.size(); a++) {
     if (indexes.at(a) == joint) {
       return data.at(a);
@@ -105,7 +111,9 @@ float NaoPosActionServer::findElem(const std::vector<uint8_t>& indexes, const st
   return NAN;
 }
 
-void NaoPosActionServer::calculateEffectorJoints(nao_lola_sensor_msgs::msg::JointPositions& sensor_joints) {
+void NaoPosActionServer::calculateEffectorJoints(
+  nao_lola_sensor_msgs::msg::JointPositions & sensor_joints)
+{
   //std::lock_guard<std::mutex> lock(mutex_);
 
   if (goal_handle_->is_canceling()) {
@@ -131,12 +139,14 @@ void NaoPosActionServer::calculateEffectorJoints(nao_lola_sensor_msgs::msg::Join
   if (firstTickSinceActionStarted_) {
     nao_lola_command_msgs::msg::JointPositions command;
     command.indexes = indexes::indexes;
-    command.positions = std::vector<float>(sensor_joints.positions.begin(), sensor_joints.positions.end());
-    key_frame_start_ = std::make_unique<KeyFrame>(0, command, nao_lola_command_msgs::msg::JointStiffnesses{});
+    command.positions =
+      std::vector<float>(sensor_joints.positions.begin(), sensor_joints.positions.end());
+    key_frame_start_ =
+      std::make_unique<KeyFrame>(0, command, nao_lola_command_msgs::msg::JointStiffnesses{});
   }
 
-  const auto& previousKeyFrame = findPreviousKeyFrame(time_ms);
-  const auto& nextKeyFrame = findNextKeyFrame(time_ms);
+  const auto & previousKeyFrame = findPreviousKeyFrame(time_ms);
+  const auto & nextKeyFrame = findNextKeyFrame(time_ms);
 
   if (firstTickSinceActionStarted_) {
     for (auto i : nextKeyFrame.positions.indexes) {
@@ -156,15 +166,18 @@ void NaoPosActionServer::calculateEffectorJoints(nao_lola_sensor_msgs::msg::Join
   float timeToNextKeyFrame = nextKeyFrame.t_ms - time_ms;
   float duration = timeFromPreviousKeyFrame + timeToNextKeyFrame;
 
-  RCLCPP_DEBUG(this->get_logger(),
-               ("timeFromPreviousKeyFrame, timeToNextKeyFrame, duration: " + std::to_string(timeFromPreviousKeyFrame) +
-                ", " + std::to_string(timeToNextKeyFrame) + ", " + std::to_string(duration))
-               .c_str());
+  RCLCPP_DEBUG(
+    this->get_logger(), ("timeFromPreviousKeyFrame, timeToNextKeyFrame, duration: " +
+                         std::to_string(timeFromPreviousKeyFrame) + ", " +
+                         std::to_string(timeToNextKeyFrame) + ", " + std::to_string(duration))
+                          .c_str());
 
-  float alpha = timeToNextKeyFrame / duration;       // normalized coefficent k of convex combination
+  float alpha = timeToNextKeyFrame / duration;  // normalized coefficent k of convex combination
   float beta = timeFromPreviousKeyFrame / duration;  // normalized 1-k
 
-  RCLCPP_DEBUG(this->get_logger(), ("alpha, beta: " + std::to_string(alpha) + ", " + std::to_string(beta)).c_str());
+  RCLCPP_DEBUG(
+    this->get_logger(),
+    ("alpha, beta: " + std::to_string(alpha) + ", " + std::to_string(beta)).c_str());
 
   nao_lola_command_msgs::msg::JointPositions effector_joints;
   nao_lola_command_msgs::msg::JointStiffnesses effector_joints_stiff;
@@ -173,11 +186,11 @@ void NaoPosActionServer::calculateEffectorJoints(nao_lola_sensor_msgs::msg::Join
   float tmp = NAN;
 
   for (uint8_t i : selected_joints_) {
-
     nextPos = this->findElem(nextKeyFrame.positions.indexes, nextKeyFrame.positions.positions, i);
-    nextStiff = this->findElem(nextKeyFrame.stiffnesses.indexes, nextKeyFrame.stiffnesses.stiffnesses, i);
-    previousPos = this->findElem(previousKeyFrame.positions.indexes, previousKeyFrame.positions.positions, i);
-
+    nextStiff =
+      this->findElem(nextKeyFrame.stiffnesses.indexes, nextKeyFrame.stiffnesses.stiffnesses, i);
+    previousPos =
+      this->findElem(previousKeyFrame.positions.indexes, previousKeyFrame.positions.positions, i);
 
     tmp = previousPos * alpha + nextPos * beta;
     if (tmp != NAN) {
@@ -187,27 +200,27 @@ void NaoPosActionServer::calculateEffectorJoints(nao_lola_sensor_msgs::msg::Join
       RCLCPP_ERROR(this->get_logger(), "NAN position");
       return;
     }
-    if(nextStiff!=NAN){
+    if (nextStiff != NAN) {
       effector_joints_stiff.indexes.push_back(i);
       effector_joints_stiff.stiffnesses.push_back(nextStiff);
-    }else{
+    } else {
       RCLCPP_ERROR(this->get_logger(), "NAN stiffness");
       return;
     }
 
     nextPos = NAN, previousPos = NAN, nextStiff = NAN;
-
   }
 
   pub_joint_positions_->publish(effector_joints);
   pub_joint_stiffnesses_->publish(effector_joints_stiff);
-  RCLCPP_DEBUG(this->get_logger(), "published to /effectors/joint_positions and /effectors/joint_stiffnesses");
-
+  RCLCPP_DEBUG(
+    this->get_logger(), "published to /effectors/joint_positions and /effectors/joint_stiffnesses");
 }
 
-const KeyFrame& NaoPosActionServer::findPreviousKeyFrame(int time_ms) {
+const KeyFrame & NaoPosActionServer::findPreviousKeyFrame(int time_ms)
+{
   for (auto it = key_frames_.rbegin(); it != key_frames_.rend(); ++it) {
-    const auto& keyFrame = *it;
+    const auto & keyFrame = *it;
     int keyFrameDeadline = keyFrame.t_ms;
     if (time_ms >= keyFrameDeadline) {
       return keyFrame;
@@ -217,8 +230,9 @@ const KeyFrame& NaoPosActionServer::findPreviousKeyFrame(int time_ms) {
   return *key_frame_start_;
 }
 
-const KeyFrame& NaoPosActionServer::findNextKeyFrame(int time_ms) {
-  for (const auto& keyFrame : key_frames_) {
+const KeyFrame & NaoPosActionServer::findNextKeyFrame(int time_ms)
+{
+  for (const auto & keyFrame : key_frames_) {
     int keyFrameDeadline = keyFrame.t_ms;
     if (time_ms < keyFrameDeadline) {
       return keyFrame;
@@ -229,7 +243,8 @@ const KeyFrame& NaoPosActionServer::findNextKeyFrame(int time_ms) {
   return key_frames_.back();
 }
 
-bool NaoPosActionServer::posFinished(int time_ms) {
+bool NaoPosActionServer::posFinished(int time_ms)
+{
   if (key_frames_.size() == 0) {
     return true;
   }
@@ -244,8 +259,9 @@ bool NaoPosActionServer::posFinished(int time_ms) {
 }
 
 rclcpp_action::GoalResponse NaoPosActionServer::handleGoal(
-  const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const nao_pos_interfaces::action::PosPlay::Goal> goal) {
-
+  const rclcpp_action::GoalUUID & uuid,
+  std::shared_ptr<const nao_pos_interfaces::action::PosPlay::Goal> goal)
+{
   std::lock_guard<std::mutex> lock(mutex_);
 
   RCLCPP_INFO(get_logger(), ("Received goal request for:  " + goal->action_name).c_str());
@@ -266,7 +282,9 @@ rclcpp_action::GoalResponse NaoPosActionServer::handleGoal(
 }
 
 rclcpp_action::CancelResponse NaoPosActionServer::handleCancel(
-  const std::shared_ptr<rclcpp_action::ServerGoalHandle<nao_pos_interfaces::action::PosPlay>> goal_handle) {
+  const std::shared_ptr<rclcpp_action::ServerGoalHandle<nao_pos_interfaces::action::PosPlay>>
+    goal_handle)
+{
   std::lock_guard<std::mutex> lock(mutex_);
   RCLCPP_INFO(get_logger(), "Received request to cancel goal");
   (void)goal_handle;
@@ -276,13 +294,15 @@ rclcpp_action::CancelResponse NaoPosActionServer::handleCancel(
 }
 
 void NaoPosActionServer::handleAccepted(
-  const std::shared_ptr<rclcpp_action::ServerGoalHandle<nao_pos_interfaces::action::PosPlay>> goal_handle) {
+  const std::shared_ptr<rclcpp_action::ServerGoalHandle<nao_pos_interfaces::action::PosPlay>>
+    goal_handle)
+{
   std::lock_guard<std::mutex> lock(mutex_);
   RCLCPP_INFO(this->get_logger(), "Starting Pos Action");
   initial_time_ = rclcpp::Node::now();
   pos_in_action_ = true;
   firstTickSinceActionStarted_ = true;
-  selected_joints_.clear();   // std::vector<uint8_t>
+  selected_joints_.clear();  // std::vector<uint8_t>
   goal_handle_ = goal_handle;
 }
 
