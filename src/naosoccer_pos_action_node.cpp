@@ -94,7 +94,7 @@ std::string NaosoccerPosActionNode::getDefaultFullFilePath()
   return full_path.string();
 }
 
-std::vector<std::string> NaosoccerPosActionNode::readLines(std::ifstream & ifstream)
+std::vector<std::string> NaoPosActionServer::readLines(std::ifstream & ifstream)
 {
   std::vector<std::string> ret;
 
@@ -210,9 +210,9 @@ void NaoPosActionServer::calculateEffectorJoints(
     this->get_logger(), "published to /effectors/joint_positions and /effectors/joint_stiffnesses");
 }
 
-const KeyFrame & NaosoccerPosActionNode::findPreviousKeyFrame(int time_ms)
+const KeyFrame & NaoPosActionServer::findPreviousKeyFrame(int time_ms)
 {
-  for (auto it = keyFrames.rbegin(); it != keyFrames.rend(); ++it) {
+  for (auto it = key_frames_.rbegin(); it != key_frames_.rend(); ++it) {
     const auto & keyFrame = *it;
     int keyFrameDeadline = keyFrame.t_ms;
     if (time_ms >= keyFrameDeadline) {
@@ -220,12 +220,12 @@ const KeyFrame & NaosoccerPosActionNode::findPreviousKeyFrame(int time_ms)
     }
   }
 
-  return *keyFrameStart;
+  return *key_frame_start_;
 }
 
-const KeyFrame & NaosoccerPosActionNode::findNextKeyFrame(int time_ms)
+const KeyFrame & NaoPosActionServer::findNextKeyFrame(int time_ms)
 {
-  for (const auto & keyFrame : keyFrames) {
+  for (const auto & keyFrame : key_frames_) {
     int keyFrameDeadline = keyFrame.t_ms;
     if (time_ms < keyFrameDeadline) {
       return keyFrame;
@@ -233,16 +233,16 @@ const KeyFrame & NaosoccerPosActionNode::findNextKeyFrame(int time_ms)
   }
 
   RCLCPP_ERROR(this->get_logger(), "findKeyFrame: Should never reach here");
-  return keyFrames.back();
+  return key_frames_.back();
 }
 
-bool NaosoccerPosActionNode::posFinished(int time_ms)
+bool NaoPosActionServer::posFinished(int time_ms)
 {
-  if (keyFrames.size() == 0) {
+  if (key_frames_.size() == 0) {
     return true;
   }
 
-  const auto lastKeyFrame = keyFrames.back();
+  const auto lastKeyFrame = key_frames_.back();
   int lastKeyFrameTime = lastKeyFrame.t_ms;
   if (time_ms >= lastKeyFrameTime) {
     return true;
