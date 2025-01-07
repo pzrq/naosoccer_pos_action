@@ -75,6 +75,9 @@ install(
 )
 
 # Actions
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(naosoccer_pos_action_node "${cpp_typesupport_target}")
+
 add_library(action_server SHARED
         src/naosoccer_pos_action_server.cpp)
 target_include_directories(action_server PRIVATE

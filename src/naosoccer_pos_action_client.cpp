@@ -18,8 +18,7 @@
 #include <string>
 #include <sstream>
 
-#include "naosoccer_pos_action_interfaces/action/pos.hpp"
-
+#include "naosoccer_pos_action/action/pos.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
