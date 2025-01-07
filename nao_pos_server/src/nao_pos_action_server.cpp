@@ -77,6 +77,10 @@ void NaoPosActionServer::readPosFile(std::string & filePath)
 
 std::string NaoPosActionServer::getFullFilePath(std::string & filename)
 {
+  // Support absolute paths too
+  if (filename.at(0) == '/') {
+    return filename;
+  }
   std::string file = "pos/" + filename;
   std::string package_share_directory =
     ament_index_cpp::get_package_share_directory("nao_pos_server");
