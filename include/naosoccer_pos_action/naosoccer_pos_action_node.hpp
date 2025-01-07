@@ -50,6 +50,7 @@ private:
 
   rclcpp::Subscription<nao_lola_sensor_msgs::msg::JointPositions>::SharedPtr sub_joint_states;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_start;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_action_choice;
   rclcpp::Publisher<nao_lola_command_msgs::msg::JointPositions>::SharedPtr pub_joint_positions;
   rclcpp::Publisher<nao_lola_command_msgs::msg::JointStiffnesses>::SharedPtr pub_joint_stiffnesses;
 

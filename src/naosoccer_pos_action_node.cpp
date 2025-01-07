@@ -52,6 +52,18 @@ NaosoccerPosActionNode::NaosoccerPosActionNode(const rclcpp::NodeOptions & optio
       }
     });
 
+  sub_action_choice =
+    create_subscription<std_msgs::msg::String>(
+      "action_choice", 1,
+      [this](std_msgs::msg::String::UniquePtr sub_action_choice) {
+          if (start_pos_action->data && fileSuccessfullyRead && !posInAction) {
+            RCLCPP_DEBUG(this->get_logger(), "Starting Pos Action");
+            begin = rclcpp::Node::now();
+            posInAction = true;
+            firstTickSinceActionStarted = true;
+          }
+      });
+
   sub_start =
     create_subscription<std_msgs::msg::Bool>(
     "start_pos_action", 1,
