@@ -31,3 +31,39 @@ To set the parameter, when running the naosoccer_pos_action node in the steps ab
 ```
 ros2 run naosoccer_pos_action naosoccer_pos_action --ros-args -p "file:=src/naosoccer_pos_action/pos/tilt.pos"
 ```
+
+## Action
+
+There is a ROS2 action available to run .pos files smoothly.
+
+### Quick Start - Publishing to the quick_start_choice subscriber
+
+1. (On a real robot) Start `nao_lola_client`:
+   ```
+   ros2 run nao_lola_client nao_lola_client
+   ```
+
+2. Publish the `.pos` file:
+   ```
+   ros2 topic pub --once quick_start_choice std_msgs/msg/String '{data: "sit-to-stand.pos"}'
+   ```
+
+This is provided because writing actions is intermediate-level ROS, so this Quick Start is designed to help
+beginners get started.
+
+It is also sufficient for simple use cases.
+
+### Action Client
+
+For more complex use cases, an action client is provided.
+
+### Action Server
+
+For more complex use cases, an action server is provided.
+
+## Eagerly registering .pos files
+
+To get a little closer to real-time ROS, this package allows eager loading and parsing of the .pos files into memory,
+the combination is henceforth known as registering the .pos files.
+
+If files were not eagerly registered, an attempt is made to lazily load them.
