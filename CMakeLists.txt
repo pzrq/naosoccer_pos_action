@@ -36,7 +36,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   nao_lola_command_msgs
   std_msgs)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
   "action/Pos.action"
 )
 
