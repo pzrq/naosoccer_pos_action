@@ -1,0 +1,5 @@
+string pos_name
+---
+bool done
+---
+float32 done_percentage

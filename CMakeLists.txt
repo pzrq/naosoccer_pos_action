@@ -19,6 +19,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(nao_lola_sensor_msgs REQUIRED)
@@ -28,11 +29,16 @@ find_package(std_msgs REQUIRED)
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp
   rclcpp_components
+  rosidl_default_generators
   ament_index_cpp
   Boost
   nao_lola_sensor_msgs
   nao_lola_command_msgs
   std_msgs)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Pos.action"
+)
 
 # Build
 add_library(${PROJECT_NAME}_node SHARED
