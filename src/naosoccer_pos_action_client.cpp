@@ -18,30 +18,30 @@
 #include <string>
 #include <sstream>
 
-#include "action_tutorials_interfaces/action/fibonacci.hpp"
+#include "naosoccer_pos_action_interfaces/action/pos.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 
-namespace action_tutorials_cpp
+namespace naosoccer_pos_action
 {
-    class FibonacciActionClient : public rclcpp::Node
+    class NaosoccerPosActionClient : public rclcpp::Node
     {
     public:
-        using Fibonacci = action_tutorials_interfaces::action::Fibonacci;
-        using GoalHandleFibonacci = rclcpp_action::ClientGoalHandle<Fibonacci>;
+        using Pos = naosoccer_pos_action_interfaces::action::Pos;
+        using GoalHandlePos = rclcpp_action::ClientGoalHandle<Pos>;
 
-        explicit FibonacciActionClient(const rclcpp::NodeOptions & options)
-          : Node("fibonacci_action_client", options)
+        explicit NaosoccerPosActionClient(const rclcpp::NodeOptions & options)
+          : Node("naosoccer_pos_action_client", options)
         {
-          this->client_ptr_ = rclcpp_action::create_client<Fibonacci>(
+          this->client_ptr_ = rclcpp_action::create_client<Pos>(
             this,
-            "fibonacci");
+            "naosoccer_pos_action");
 
           this->timer_ = this->create_wall_timer(
             std::chrono::milliseconds(500),
-            std::bind(&FibonacciActionClient::send_goal, this));
+            std::bind(&NaosoccerPosActionClient::send_goal, this));
         }
 
         void send_goal()
@@ -55,26 +55,26 @@ namespace action_tutorials_cpp
             rclcpp::shutdown();
           }
 
-          auto goal_msg = Fibonacci::Goal();
+          auto goal_msg = Pos::Goal();
           goal_msg.order = 10;
 
           RCLCPP_INFO(this->get_logger(), "Sending goal");
 
-          auto send_goal_options = rclcpp_action::Client<Fibonacci>::SendGoalOptions();
+          auto send_goal_options = rclcpp_action::Client<Pos>::SendGoalOptions();
           send_goal_options.goal_response_callback =
-            std::bind(&FibonacciActionClient::goal_response_callback, this, _1);
+            std::bind(&NaosoccerPosActionClient::goal_response_callback, this, _1);
           send_goal_options.feedback_callback =
-            std::bind(&FibonacciActionClient::feedback_callback, this, _1, _2);
+            std::bind(&NaosoccerPosActionClient::feedback_callback, this, _1, _2);
           send_goal_options.result_callback =
-            std::bind(&FibonacciActionClient::result_callback, this, _1);
+            std::bind(&NaosoccerPosActionClient::result_callback, this, _1);
           this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
         }
 
     private:
-        rclcpp_action::Client<Fibonacci>::SharedPtr client_ptr_;
+        rclcpp_action::Client<Pos>::SharedPtr client_ptr_;
         rclcpp::TimerBase::SharedPtr timer_;
 
-        void goal_response_callback(const GoalHandleFibonacci::SharedPtr & goal_handle)
+        void goal_response_callback(const GoalHandlePos::SharedPtr & goal_handle)
         {
           if (!goal_handle) {
             RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
@@ -84,8 +84,8 @@ namespace action_tutorials_cpp
         }
 
         void feedback_callback(
-          GoalHandleFibonacci::SharedPtr,
-          const std::shared_ptr<const Fibonacci::Feedback> feedback)
+          GoalHandlePos::SharedPtr,
+          const std::shared_ptr<const Pos::Feedback> feedback)
         {
           std::stringstream ss;
           ss << "Next number in sequence received: ";
@@ -95,7 +95,7 @@ namespace action_tutorials_cpp
           RCLCPP_INFO(this->get_logger(), ss.str().c_str());
         }
 
-        void result_callback(const GoalHandleFibonacci::WrappedResult & result)
+        void result_callback(const GoalHandlePos::WrappedResult & result)
         {
           switch (result.code) {
             case rclcpp_action::ResultCode::SUCCEEDED:
@@ -118,8 +118,8 @@ namespace action_tutorials_cpp
           RCLCPP_INFO(this->get_logger(), ss.str().c_str());
           rclcpp::shutdown();
         }
-    };  // class FibonacciActionClient
+    };  // class NaosoccerPosActionClient
 
-}  // namespace action_tutorials_cpp
+}  // namespace naosoccer_pos_action
 
-RCLCPP_COMPONENTS_REGISTER_NODE(action_tutorials_cpp::FibonacciActionClient)
+RCLCPP_COMPONENTS_REGISTER_NODE(naosoccer_pos_action::NaosoccerPosActionClient)

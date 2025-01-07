@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ACTION_TUTORIALS_CPP__VISIBILITY_CONTROL_H_
-#define ACTION_TUTORIALS_CPP__VISIBILITY_CONTROL_H_
+#ifndef NAOSOCCER_POS_ACTION_CPP__VISIBILITY_CONTROL_H_
+#define NAOSOCCER_POS_ACTION_CPP__VISIBILITY_CONTROL_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -25,34 +25,34 @@ extern "C"
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
-    #define ACTION_TUTORIALS_CPP_EXPORT __attribute__ ((dllexport))
-    #define ACTION_TUTORIALS_CPP_IMPORT __attribute__ ((dllimport))
+    #define NAOSOCCER_POS_ACTION_CPP_EXPORT __attribute__ ((dllexport))
+    #define NAOSOCCER_POS_ACTION_CPP_IMPORT __attribute__ ((dllimport))
   #else
-    #define ACTION_TUTORIALS_CPP_EXPORT __declspec(dllexport)
-    #define ACTION_TUTORIALS_CPP_IMPORT __declspec(dllimport)
+    #define NAOSOCCER_POS_ACTION_CPP_EXPORT __declspec(dllexport)
+    #define NAOSOCCER_POS_ACTION_CPP_IMPORT __declspec(dllimport)
   #endif
-  #ifdef ACTION_TUTORIALS_CPP_BUILDING_DLL
-    #define ACTION_TUTORIALS_CPP_PUBLIC ACTION_TUTORIALS_CPP_EXPORT
+  #ifdef NAOSOCCER_POS_ACTION_CPP_BUILDING_DLL
+    #define NAOSOCCER_POS_ACTION_CPP_PUBLIC NAOSOCCER_POS_ACTION_CPP_EXPORT
   #else
-    #define ACTION_TUTORIALS_CPP_PUBLIC ACTION_TUTORIALS_CPP_IMPORT
+    #define NAOSOCCER_POS_ACTION_CPP_PUBLIC NAOSOCCER_POS_ACTION_CPP_IMPORT
   #endif
-  #define ACTION_TUTORIALS_CPP_PUBLIC_TYPE ACTION_TUTORIALS_CPP_PUBLIC
-  #define ACTION_TUTORIALS_CPP_LOCAL
+  #define NAOSOCCER_POS_ACTION_CPP_PUBLIC_TYPE NAOSOCCER_POS_ACTION_CPP_PUBLIC
+  #define NAOSOCCER_POS_ACTION_CPP_LOCAL
 #else
-#define ACTION_TUTORIALS_CPP_EXPORT __attribute__ ((visibility("default")))
-#define ACTION_TUTORIALS_CPP_IMPORT
+#define NAOSOCCER_POS_ACTION_CPP_EXPORT __attribute__ ((visibility("default")))
+#define NAOSOCCER_POS_ACTION_CPP_IMPORT
 #if __GNUC__ >= 4
-#define ACTION_TUTORIALS_CPP_PUBLIC __attribute__ ((visibility("default")))
-    #define ACTION_TUTORIALS_CPP_LOCAL  __attribute__ ((visibility("hidden")))
+#define NAOSOCCER_POS_ACTION_CPP_PUBLIC __attribute__ ((visibility("default")))
+    #define NAOSOCCER_POS_ACTION_CPP_LOCAL  __attribute__ ((visibility("hidden")))
 #else
-#define ACTION_TUTORIALS_CPP_PUBLIC
-#define ACTION_TUTORIALS_CPP_LOCAL
+#define NAOSOCCER_POS_ACTION_CPP_PUBLIC
+#define NAOSOCCER_POS_ACTION_CPP_LOCAL
 #endif
-#define ACTION_TUTORIALS_CPP_PUBLIC_TYPE
+#define NAOSOCCER_POS_ACTION_CPP_PUBLIC_TYPE
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // ACTION_TUTORIALS_CPP__VISIBILITY_CONTROL_H_
+#endif  // NAOSOCCER_POS_ACTION_CPP__VISIBILITY_CONTROL_H_
